@@ -3,14 +3,14 @@ name: Benim Depomdan İki Depoya Birden Güvenli Kopyala
 on:
   push:
     branches:
-      - main  # Sizin emire0403 deponuzun ana dalı master ise burayı master yapın
+      - main
 
 jobs:
   sync-to-ramazan:
     runs-on: ubuntu-latest
     steps:
     - name: Kendi Depomu Klonla (emire0403)
-      uses: actions/checkout@v4
+      uses: actions/checkout@v4.2.2 # Güncel Node sürüm uyumlu hale getirildi
 
     - name: Git Kimlik Ayarlarını Yap
       run: |
@@ -20,12 +20,8 @@ jobs:
     # --- 1. DEPO: SuperBlock Güncellemesi ---
     - name: SuperBlock Deposunu Güncelle
       run: |
-        # Ramazanenesisik010/SuperBlock deposunu klonla
         git clone https://${{ secrets.RAMAZAN_TOKEN }}@://github.com depo_1
-        
-        # Tüm dosyaları (.git ve .github klasörleri hariç) kopyala ve eşitle
         rsync -av --delete --exclude='.git/' --exclude='.github/' ./ depo_1/
-        
         cd depo_1
         git add .
         if ! git diff-index --quiet HEAD; then
@@ -40,12 +36,8 @@ jobs:
     # --- 2. DEPO: superblock_web Güncellemesi ---
     - name: superblock_web Deposunu Güncelle
       run: |
-        # Ramazanenesisik010/superblock_web deposunu klonla
         git clone https://${{ secrets.RAMAZAN_TOKEN }}@://github.com depo_2
-        
-        # Tüm dosyaları (.git ve .github klasörleri hariç) kopyala ve eşitle
         rsync -av --delete --exclude='.git/' --exclude='.github/' ./ depo_2/
-        
         cd depo_2
         git add .
         if ! git diff-index --quiet HEAD; then
