@@ -3,14 +3,22 @@ name: Benim Depomdan İki Depoya Birden Güvenli Kopyala
 on:
   push:
     branches:
-      - main
+      - main  # Sizin emire0403 deponuzun ana dalı master ise burayı master yapın
 
 jobs:
   sync-to-ramazan:
     runs-on: ubuntu-latest
     steps:
     - name: Kendi Depomu Klonla (emire0403)
-      uses: actions/checkout@v4.2.2 # Güncel Node sürüm uyumlu hale getirildi
+      uses: actions/checkout@v4.2.2
+
+    - name: Token Kontrolü (Hata Önleyici)
+      run: |
+        if [ -z "${{ secrets.RAMAZAN_TOKEN }}" ]; then
+          echo "❌ HATA: RAMAZAN_TOKEN bulunamadı veya boş!"
+          echo "Lütfen emire0403/superblock_web deposunun Settings > Secrets > Actions kısmına tokenı ekleyin."
+          exit 1
+        fi
 
     - name: Git Kimlik Ayarlarını Yap
       run: |
@@ -19,8 +27,10 @@ jobs:
 
     # --- 1. DEPO: SuperBlock Güncellemesi ---
     - name: SuperBlock Deposunu Güncelle
+      env:
+        TOKEN: ${{ secrets.RAMAZAN_TOKEN }}
       run: |
-        git clone https://${{ secrets.RAMAZAN_TOKEN }}@://github.com depo_1
+        git clone https://${TOKEN}@://github.com depo_1
         rsync -av --delete --exclude='.git/' --exclude='.github/' ./ depo_1/
         cd depo_1
         git add .
@@ -35,8 +45,10 @@ jobs:
 
     # --- 2. DEPO: superblock_web Güncellemesi ---
     - name: superblock_web Deposunu Güncelle
+      env:
+        TOKEN: ${{ secrets.RAMAZAN_TOKEN }}
       run: |
-        git clone https://${{ secrets.RAMAZAN_TOKEN }}@://github.com depo_2
+        git clone https://${TOKEN}@://github.com depo_2
         rsync -av --delete --exclude='.git/' --exclude='.github/' ./ depo_2/
         cd depo_2
         git add .
